@@ -1,0 +1,98 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+# Get the gem's installation directory
+gem_dir = File.expand_path('../..', __FILE__)
+
+# Ensure ~/.coach directory exists
+data_dir = File.expand_path('~/.coach')
+FileUtils.mkdir_p(data_dir) unless Dir.exist?(data_dir)
+FileUtils.mkdir_p(File.join(data_dir, 'backups')) unless Dir.exist?(File.join(data_dir, 'backups'))
+
+# Change to gem directory for migrations
+Dir.chdir(gem_dir)
+
+# Set environment to production by default for gem installations
+ENV['RAILS_ENV'] ||= 'production'
+
+command = ARGV[0]
+
+case command
+when 'migrate'
+  puts "Running migrations for #{ENV['RAILS_ENV']} environment..."
+  exec "bundle exec rake db:migrate"
+when 'rollback'
+  steps = ARGV[1] || '1'
+  puts "Rolling back #{steps} migration(s) in #{ENV['RAILS_ENV']} environment..."
+  exec "bundle exec rake db:rollback STEP=#{steps}"
+when 'status'
+  puts "Migration status for #{ENV['RAILS_ENV']} environment:"
+  exec "bundle exec rake db:migrate:status"
+when 'version'
+  exec "bundle exec rake db:version"
+when 'reset'
+  puts "Resetting #{ENV['RAILS_ENV']} database..."
+  exec "bundle exec rake db:reset"
+when 'seed'
+  exec "bundle exec rake db:seed"
+when 'setup'
+  puts "Setting up #{ENV['RAILS_ENV']} database..."
+  exec "bundle exec rake db:setup"
+when 'drop'
+  puts "Dropping #{ENV['RAILS_ENV']} database..."
+  exec "bundle exec rake db:drop"
+when 'create'
+  puts "Creating #{ENV['RAILS_ENV']} database..."
+  exec "bundle exec rake db:create"
+when 'backup'
+  timestamp = Time.now.strftime('%Y%m%d_%H%M%S')
+  db_file = File.join(data_dir, "coach_#{ENV['RAILS_ENV']}.sqlite3")
+  backup_file = File.join(data_dir, 'backups', "coach_#{ENV['RAILS_ENV']}_#{timestamp}.sqlite3")
+  
+  if File.exist?(db_file)
+    FileUtils.cp(db_file, backup_file)
+    puts "Backed up database to: #{backup_file}"
+  else
+    puts "No database found at: #{db_file}"
+    exit 1
+  end
+when 'help', '--help', '-h', nil
+  puts <<~HELP
+    Coach Database Management
+    
+    Usage: coach-db [command] [options]
+    
+    Commands:
+      migrate              Run pending migrations
+      rollback [STEP]      Rollback migrations (default: 1 step)
+      status               Show migration status
+      version              Show current schema version
+      reset                Drop and recreate database
+      setup                Create database and run migrations
+      create               Create the database
+      drop                 Drop the database
+      seed                 Load seed data
+      backup               Backup the current database
+      help                 Show this help message
+    
+    Environment:
+      Set RAILS_ENV to specify environment (default: production)
+      
+      Examples:
+        coach-db migrate
+        coach-db status
+        coach-db rollback 3
+        coach-db backup
+        RAILS_ENV=development coach-db migrate
+    
+    Database Location:
+      Production: ~/.coach/coach_production.sqlite3
+      Development: <gem_dir>/db/coach_development.sqlite3
+      Test: <gem_dir>/db/coach_test.sqlite3
+  HELP
+else
+  puts "Unknown command: #{command}"
+  puts "Run 'coach-db help' for usage information"
+  exit 1
+end

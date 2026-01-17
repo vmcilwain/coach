@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/coach'
+
+Coach::Database.establish_connection
+Coach::CLI.start

@@ -1,0 +1,5 @@
+db:
+  migrate: db/migrate
+  schema: db/schema.rb
+  config:
+    database: db/config.yml

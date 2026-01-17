@@ -1,0 +1,17 @@
+development:
+  adapter: sqlite3
+  database: db/coach_development.sqlite3
+  pool: 5
+  timeout: 5000
+
+test:
+  adapter: sqlite3
+  database: db/coach_test.sqlite3
+  pool: 5
+  timeout: 5000
+
+production:
+  adapter: sqlite3
+  database: <%= ENV['HOME'] %>/.coach/coach_production.sqlite3
+  pool: 5
+  timeout: 5000
