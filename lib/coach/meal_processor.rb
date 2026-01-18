@@ -1,3 +1,4 @@
+# lib/coach/meal_processor.rb
 require 'date'
 
 module Coach
@@ -14,31 +15,43 @@ module Coach
       puts "\n"
       
       loop do
-        print "Enter food item (or 'done' to finish): "
-        item = gets.chomp
+        print "Would you like to enter #{meals.any? ? 'another' : "you're first"} meal? (yes/no): "
+        answer = gets.chomp.downcase
         
-        break if item.downcase == 'done'
+        break if answer == 'no'
         
-        next if item.strip.empty?
+        print "Enter meal type for this entry: "
+        meal_type = gets.chomp
         
-        puts "  Analyzing '#{item}'..."
-        
-        prompt = PromptBuilder.build_meal_item_prompt(item)
-        analyzer = Analyzer.new(prompt)
-        analysis = analyzer.analyze_data
-        
-        parsed_item = JsonParser.parse(analysis, validation_type: :meal_item)
-        
-        if parsed_item.nil?
-          puts "  ✗ Error: Could not analyze this item. Please try again."
-          next
-        end
-        
-        meals << parsed_item
-        
-        puts "  ✓ Added: #{parsed_item['item']}"
-        puts "    Calories: #{parsed_item['calories']} | Protein: #{parsed_item['protein']}g | Carbs: #{parsed_item['carbs']}g | Fats: #{parsed_item['fats']}g"
         puts "\n"
+        
+        loop do
+          print "Enter food item  (or 'done' to finish): "
+          item = gets.chomp
+          
+          break if item.downcase == 'done'
+          
+          next if item.strip.empty?
+          
+          puts "  Analyzing '#{item}'..."
+            
+          prompt = PromptBuilder.build_meal_item_prompt(meal_type, item)
+          analyzer = Analyzer.new(prompt)
+          analysis = analyzer.analyze_data
+            
+          parsed_item = JsonParser.parse(analysis, validation_type: :meal_item)
+          
+          if parsed_item.nil?
+            puts "  ✗ Error: Could not analyze this item. Please try again."
+            next
+          end
+        
+          meals << { **parsed_item, meal_type: meal_type }
+            
+          puts "  ✓ Added: #{parsed_item['item']}"
+          puts "    Calories: #{parsed_item['calories']} | Protein: #{parsed_item['protein']}g | Carbs: #{parsed_item['carbs']}g | Fats: #{parsed_item['fats']}g"
+          puts "\n"
+        end
       end
       
       meals
@@ -54,7 +67,8 @@ module Coach
           protein: meal_data['protein'],
           carbs: meal_data['carbs'],
           fats: meal_data['fats'],
-          created_at: Date.today
+          # created_at: Date.today,
+          meal_type: meal_data['meal_type']
         )
       end
       

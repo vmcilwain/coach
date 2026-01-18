@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_11_164422) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_17_192907) do
   create_table "goals", force: :cascade do |t|
     t.decimal "body_fat_percent", precision: 5, scale: 2, default: "0.0", null: false
     t.integer "calories"
@@ -29,6 +29,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_11_164422) do
     t.datetime "created_at", null: false
     t.integer "fats", default: 0, null: false
     t.string "item", default: "", null: false
+    t.string "meal_type"
     t.integer "protein", default: 0, null: false
     t.datetime "updated_at", null: false
   end

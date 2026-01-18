@@ -107,11 +107,11 @@ module Coach
       PROMPT
     end
 
-    def self.build_meal_item_prompt(item)
+    def self.build_meal_item_prompt(meal_type, item)
       <<~PROMPT
       You are a nutrition expert. Calculate the macronutrients for this food item: "#{item}"
 
-      CRITICAL: You MUST respond with ONLY valid JSON. No other text.
+      CRITICAL: You MUST respond with ONLY valid JSON. No other text. ONLY process the item given to you. DO NOT make assumptions or add extra items.
 
       JSON REQUIREMENTS:
       1. Start with { and end with }
@@ -121,6 +121,7 @@ module Coach
       5. Match this EXACT structure with these EXACT field names:
 
       {
+        "meal_type": "#{meal_type}",
         "item": "6 oz chicken breast",
         "calories": 280,
         "protein": 53,
